@@ -2,3 +2,8 @@
   base = "."
   publish = "site"
   command = "node perevirka-kvizu.js"
+
+[[redirects]]
+  from = "/dyakuyu/*"
+  to = "/kviz/"
+  status = 302
