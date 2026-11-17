@@ -224,7 +224,7 @@ function track(name,data){
 const UTM=(()=>{const o={};try{const p=new URLSearchParams(location.search);["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","ttclid"].forEach(k=>{if(p.get(k))o[k]=p.get(k)})}catch(e){}return o})();
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-/* ---------- 7 питань: формат, трафік, вітрина, асортимент, постачальник, терміни, район ---------- */
+/* ---------- 3 питання: формат, трафік, район (скорочено з 7, решту уточнює менеджер) ---------- */
 const Q=[
   {key:"format",label:"Формат закладу",kick:"Ваш заклад",q:`Який у вас <span class="pk">формат</span>?`,
    opts:[{t:"Кав'ярня з вітриною",s:"є місце під десерти"},{t:"Кав'ярня to go",s:"невелика стійка"},{t:"Кафе чи ресторан",s:"сніданки, обіди"},{t:"Мережа",s:"від 3 точок"},{t:"Готель, бізнес-центр, коворкінг",s:"офісна кав'ярня, лобі-бар",full:true}],
@@ -232,16 +232,6 @@ const Q=[
   {key:"traffic",label:"Чеків на день",kick:"Трафік",q:`Скільки <span class="pk">чеків на день</span> у закладі?`,
    opts:[{t:"До 50"},{t:"50–100"},{t:"100–200"},{t:"Понад 200"},{t:"Тільки відкриваємось",s:"порахуємо разом",full:true}],
    hint:"Від трафіку залежить <b>кількість на одну доставку</b>: вітрина має продавати, а не списувати."},
-  {key:"vitrine",label:"Вітрина",kick:"Обладнання",q:`Чи є у вас <span class="pk">вітрина</span> для десертів?`,
-   opts:[{t:"Так, холодильна"},{t:"Так, без охолодження",s:"підберемо позиції"},{t:"Вітрини немає",s:"розкажемо про оренду",full:true}],
-   hint:"Немає холодильної вітрини? Є <b>оренда вітрини</b>, умови розповість менеджер."},
-  {key:"want",label:"Що цікавить",kick:"Асортимент",multi:true,q:`Що хочете <span class="pk">на вітрині</span>?`,sub:"Можна обрати кілька",
-   opts:[{t:"Солодке",s:"макаронс, тарти, чізкейки, трубочки, вупі-паї",img:"mac"},{t:"Солоне",s:"кіші й вертути",img:"quiche"},{t:"Ранкове",s:"гранола, чіа-пудинг",img:"chia"},{t:"Десерти в стаканах",s:"тірамісу, наполеон, медовик"}]},
-  {key:"supplier",label:"Постачальник",kick:"Зараз",q:`Звідки зараз <span class="pk">берете десерти</span>?`,
-   opts:[{t:"Кро-ко"},{t:"Maya Cake"},{t:"Інший цех"},{t:"Печемо самі"},{t:"Десертів поки немає",full:true}],
-   hint:"Порівняємо <b>асортимент і маржу</b> з тим, що у вас є зараз."},
-  {key:"when",label:"Коли починати",kick:"Терміни",q:`Коли готові <span class="pk">поставити десерти</span>?`,
-   opts:[{t:"Цього тижня"},{t:"Протягом місяця"},{t:"Пізніше, поки дивимось",full:true}]},
   {key:"area",label:"Район",kick:"Доставка",q:`Де знаходиться <span class="pk">заклад</span>?`,
    opts:[{t:"Лівий берег",s:"Дарницький, Дніпровський, Деснянський"},{t:"Правий берег",s:"Печерський, Шевченківський, Голосіївський, Солом'янський, Святошинський, Подільський, Оболонський"},{t:"Київська область",full:true}],
    hint:"Доставка <b>безкоштовна</b> від мінімальної суми замовлення."},
@@ -271,8 +261,8 @@ function pickPack(){
 const kyiv=()=>A.area===0||A.area===1;
 /* Кваліфікація: A гарячий, B теплий, C холодний (клієнту не показується) */
 function score(){
-  if(!kyiv()||A.when===2)return"C";
-  if(A.when===0||(A.when===1&&A.traffic!==0))return"A";
+  if(!kyiv())return"C";
+  if(A.traffic>=1&&A.traffic<=3)return"A";   // Київ і від 50 чеків на день
   return"B";
 }
 const setOffer=()=>score()!=="C";          // сет даємо лише кваліфікованим (ліміт 10 сетів на тиждень)
@@ -294,7 +284,7 @@ function start(){
   swap(`
     <p class="who">Для власників кав'ярень Києва</p>
     <h1>Вітрина <span class="pk">під ключ</span> для вашої кав'ярні</h1>
-    <p class="sub">7 питань, і ми підберемо набір десертів під ваш трафік та покажемо вашу маржу на полиці.</p>
+    <p class="sub">3 питання, і ми підберемо набір десертів під ваш трафік та покажемо вашу маржу на полиці.</p>
     <div class="hero"><img src="${IMG.hero}" alt="Гранд-макаронс з кавовим кремом"></div>
     <div class="strip">${["gmac","tart","trub","vupi","kish","chia"].map(k=>`<img src="${IMG[k]}" alt="" loading="lazy">`).join("")}</div>
     <div class="sets">${ORDER.map((k,j)=>`<div class="set s${j}"><b>${PACKS[k].name}</b><span>${PACKS[k].pos} позицій</span><small>закупка ${PACKS[k].buy} грн</small></div>`).join("")}</div>
@@ -305,7 +295,7 @@ function start(){
       <li><i>▤</i><b>Карта викладки</b>що й де ставити на вітрину</li>
     </ul>
     <div class="push"><button class="btn main" id="go">Підібрати вітрину <span class="ar">→</span></button>
-    <p class="fine">7 питань · 1 хвилина · без оплати</p></div>
+    <p class="fine">3 питання · 30 секунд · без оплати</p></div>
   `);
 }
 
@@ -405,11 +395,11 @@ function formBind(P){
     if(digits.length!==9)bad("phone","#phE","Потрібно 9 цифр після +380");
     if(!ok){const el=stage.querySelector(".field.err input");if(el)el.focus();return;}
     const btn=$("#send");btn.dataset.orig=btn.dataset.orig||btn.innerHTML;btn.disabled=true;btn.textContent="Надсилаємо…";const se=$("#sendErr");if(se)se.remove();
-    const t=(qi,k)=>Q[qi].opts[k].t;
+    const t=(key,k)=>{const q=Q.find(x=>x.key===key);return q&&q.opts[k]?q.opts[k].t:"";};
     const lead={
       ts:new Date().toISOString(),place,address:addr,name,phone:"+380"+digits,instagram:ig,role,messenger:contactVia,
-      format:t(0,A.format),traffic:t(1,A.traffic),vitrine:t(2,A.vitrine),want:A.want.map(k=>t(3,k)).join(", "),
-      supplier:t(4,A.supplier),when:t(5,A.when),area:t(6,A.area),
+      format:t("format",A.format),traffic:t("traffic",A.traffic),vitrine:t("vitrine",A.vitrine),want:A.want.map(k=>t("want",k)).join(", "),
+      supplier:t("supplier",A.supplier),when:t("when",A.when),area:t("area",A.area),
       pack:P.name+" ("+P.pos+" позицій, закупка "+P.buy+" грн)",score:score(),
       offer:setOffer()?"Дегустаційний сет 15 шт.":"Прайс і розрахунок вітрини",
       source:"квіз",page:location.href,...UTM};
@@ -452,7 +442,7 @@ async function sendForm(l){
   if(salty)f.append("entry.1382808586","Солоне");
   const utm=[l.utm_source,l.utm_campaign,l.utm_content].filter(Boolean).join(" / ");
   f.append("entry.1040253570",["КВІЗ · оцінка "+l.score,"пропозиція: "+l.offer,"набір: "+l.pack,"район: "+l.area,"формат: "+l.format,"чеків на день: "+l.traffic,
-    "вітрина: "+l.vitrine,"цікавить: "+l.want,"зараз бере: "+l.supplier,"старт: "+l.when,"зв'язок: "+l.messenger,utm?"реклама: "+utm:""].filter(Boolean).join("; "));
+    l.vitrine?"вітрина: "+l.vitrine:"",l.want?"цікавить: "+l.want:"",l.supplier?"зараз бере: "+l.supplier:"",l.when?"старт: "+l.when:"","зв'язок: "+l.messenger,utm?"реклама: "+utm:""].filter(Boolean).join("; "));
   for(let i=0;i<2;i++){
     try{await fetch(CONFIG.FORM_URL,{method:"POST",mode:"no-cors",body:f});return {ok:true};}catch(e){}
     await new Promise(r=>setTimeout(r,1200));
