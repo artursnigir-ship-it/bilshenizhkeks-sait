@@ -226,8 +226,8 @@ const CONFIG = {
   WEBHOOK_URL: "",                 // необов'язково: адреса Apps Script; якщо вказана, заявка йде туди замість форми
   FB_PIXELS: ["29747108554874576"], GA_ID: "", TT_PIXEL: "",   // Meta Pixel БНК
   PHONE: "+380976551100", PHONE_TXT: "097 655 11 00", INSTAGRAM: "bilshenizhkeks",
-  OFFER: true,                     // акція «перше замовлення до 1 200 грн безкоштовно». false = дегустаційний сет
-  OFFER_SUM: "1 200",
+  OFFER: true,                     // дегустаційний сет 15 позицій за фіксованою ціною OFFER_SUM (Артур 25.11). false = без ціни сету
+  OFFER_SUM: "800",
   LIVE_HOSTS: /(^|\.)netlify\.app$|(^|\.)bilshenizhkeks\.com\.ua$|(^|\.)bilshenizhkeks\.com$/,
 };
 const PREVIEW=!CONFIG.LIVE_HOSTS.test(location.hostname);
@@ -295,9 +295,9 @@ function start(){
   swap(`
     <p class="who">Для власників кав'ярень Києва</p>
     ${CONFIG.OFFER
-      ?`<h1>Дегустаційний сет для вашої кав'ярні — <span class="pk">безкоштовно</span></h1>
-        <div class="offer"><div class="sum"><small>Даруємо</small><b>${CONFIG.OFFER_SUM} грн</b></div>
-          <div class="txt"><b>на перше замовлення</b><span>Оберіть десерти й закуски на цю суму — привеземо їх на вашу вітрину без оплати.</span></div></div>`
+      ?`<h1>Дегустаційний сет для вашої кав'ярні — <span class="pk">15 позицій</span></h1>
+        <div class="offer"><div class="sum"><small>Ціна сету</small><b>${CONFIG.OFFER_SUM} грн</b></div>
+          <div class="txt"><b>15 позицій асортименту</b><span>Десерти й закуски для тесту на ваших гостях. Доставка безкоштовна.</span></div></div>`
       :`<h1>Вітрина <span class="pk">під ключ</span> для вашої кав'ярні</h1>
         <p class="sub">Десерти й закуски під ваш формат: асортимент, ціна на полиці, маржа.</p>`}
     <div class="hero"><img class="bgb" src="${IMG.hero}" alt=""><img src="${IMG.hero}" alt="Кіш, гранд-макаронс і макаронс від Більше ніж кєкс"><span class="tag">${CONFIG.OFFER?"Чорна п'ятниця для кав'ярень":"Цех десертів · Київ"}</span></div>
@@ -345,7 +345,7 @@ function calc(){
     ["Ваш заклад", qt("format",A.format)+" · "+qt("traffic",A.traffic)+(A.traffic===4?"":" чеків на день")],
     ["Асортимент", "пакет «"+P.n+"» під ваш трафік"],
     ["Доставка", qt("area",A.area)+": "+dv.d],
-    gift?["Подарунок","резервуємо сет на "+CONFIG.OFFER_SUM+" грн"]:["Дегустація","готуємо дегустаційний сет"],
+    gift?["Дегустація","сет 15 позицій за "+CONFIG.OFFER_SUM+" грн"]:["Дегустація","готуємо дегустаційний сет"],
   ];
   const pics=["mac","tart","kish","trub"];
   const R=54, L=2*Math.PI*R, T=450+steps.length*520;
@@ -408,11 +408,11 @@ function result(){
     <div class="pack"><div class="ph"><img class="bgb" src="${IMG[P.img]}" alt=""><img src="${IMG[P.img]}" alt=""><span>Ваш пакет</span></div>
       <div class="bd"><h2>«Вітрина під ключ»: <span class="pk">${P.n}</span></h2>
       <ul>${P.items.map(t=>`<li>${t}</li>`).join("")}<li>Карта викладки, рекомендована ціна на полиці й маржа по кожній позиції</li><li>Цінники й тейбл-тент у стилі бренду</li></ul></div></div>
-    ${CONFIG.OFFER&&kyiv()?`<div class="gift"><b>${CONFIG.OFFER_SUM} грн</b><span>Дегустаційний сет: перше замовлення на цю суму — безкоштовно, доставка теж</span></div>`
+    ${CONFIG.OFFER&&kyiv()?`<div class="gift"><b>${CONFIG.OFFER_SUM} грн</b><span>Дегустаційний сет 15 позицій, доставка безкоштовна</span></div>`
       :`<div class="gift" style="background:var(--green)"><b>Сет</b><span>Дегустаційний сет для області: суму й умови доставки уточнить менеджер</span></div>`}
     <div class="deliv"><div>Доставка<b>${dv.d}</b></div><div>Мінімальне замовлення<b>${dv.min}</b></div></div>
     <div class="formcard" id="leadForm">
-      <div class="h"><b>Куди зателефонувати?</b><small>Менеджер уточнить заклад і вітрину й підбере набір позицій ${CONFIG.OFFER&&kyiv()?`на ${CONFIG.OFFER_SUM} грн`:""}</small></div>
+      <div class="h"><b>Куди зателефонувати?</b><small>Менеджер уточнить заклад і вітрину й узгодить день доставки сету</small></div>
       <form id="lead" novalidate>
         <div class="field"><label class="sr" for="name">Ім'я</label><input id="name" autocomplete="given-name" placeholder="Ваше ім'я"><div class="e" id="nmE"></div></div>
         <div class="field"><label class="sr" for="phone">Телефон</label><div class="phone"><div class="cc"><span class="fl" id="ccFlag" aria-hidden="true"></span><span id="ccCode">+380</span><span class="car" aria-hidden="true">▼</span><select id="cc" aria-label="Код країни">${ccOptions(phoneCC)}</select></div><input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="67 123 45 67"></div><div class="e" id="phE"></div></div>
@@ -451,7 +451,7 @@ function formBind(P){
     const btn=$("#send");btn.dataset.orig=btn.dataset.orig||btn.innerHTML;btn.disabled=true;btn.textContent="Надсилаємо…";const se=$("#sendErr");if(se)se.remove();
     const qt=(key,k)=>{const q=Q.find(x=>x.key===key);return q&&q.opts[k]?q.opts[k].t:"";};
     const fmt=qt("format",A.format), tr=qt("traffic",A.traffic), want=A.want.map(k=>qt("want",k)).join(", "), area=qt("area",A.area);
-    const offer=CONFIG.OFFER&&kyiv()?`Дегустаційний сет ${CONFIG.OFFER_SUM} грн безкоштовно (перше замовлення)`:"Дегустаційний сет";
+    const offer=CONFIG.OFFER&&kyiv()?`Дегустаційний сет 15 позицій за ${CONFIG.OFFER_SUM} грн`:"Дегустаційний сет";
     // назву й адресу закладу менеджер уточнює на дзвінку; у таблицю йде позначка, щоб обов'язкові поля форми не були порожні
     const place="уточнити на дзвінку ("+fmt+")", addr="уточнити на дзвінку · "+area;
     const lead={name,place,address:addr,instagram:"",phone:"+"+DIAL[phoneCC]+digits,phone_country:ccName(phoneCC),role,messenger:contactVia,
@@ -513,14 +513,14 @@ function sendFail(btn){
 function thanks(lead){
   qmode(false);
   bind=()=>{stage.querySelectorAll(".contact a").forEach(a=>a.onclick=()=>track("Contact",{via:a.dataset.v}));};
-  const gift=lead.offer.includes("безкоштовно");
+  const gift=lead.offer.includes(" грн");
   swap(`
     <div class="done" aria-hidden="true">✓</div>
     <h2>Дякуємо, <span class="pk">${lead.name.replace(/[<>&"]/g,"")}</span>! Заявку прийнято</h2>
     <p class="sub">Менеджер зателефонує в робочий час (пн–пт) і підбере набір під вашу вітрину.</p>
     <ol class="flow">
       <li>Дзвінок: уточнюємо формат і що продається у ваших гостей</li>
-      <li>${gift?`Привозимо дегустаційний сет на ${CONFIG.OFFER_SUM} грн безкоштовно`:"Привозимо дегустаційний сет"} разом із прайсом і маржею по кожній позиції</li>
+      <li>${gift?`Привозимо дегустаційний сет 15 позицій за ${CONFIG.OFFER_SUM} грн`:"Привозимо дегустаційний сет"} разом із прайсом і маржею по кожній позиції</li>
       <li>Через 2–3 дні питаємо, що продалося, і що замовити далі</li>
       <li>Далі поставки за графіком, від мінімальної суми за передоплатою</li>
     </ol>
